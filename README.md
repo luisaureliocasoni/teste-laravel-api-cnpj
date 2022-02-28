@@ -15,5 +15,5 @@ OU
 4. `./vendor/bin/sail artisan migrate` - para rodar as migrações
 
 ## Testando usando docker
-1`./vendor/bin/sail artisan make:test <nometeste>` - para criar o teste
-2`./vendor/bin/sail test` - para rodar os testes - por causa do fato de que a aplicação está usando a API pública do ReceitaWS, recomenda-se rodar os testes apenas 1 vez por minuto.
+1.`./vendor/bin/sail artisan make:test <nometeste>` - para criar o teste
+2.`./vendor/bin/sail test` - para rodar os testes - por causa do fato de que a aplicação está usando a API pública do ReceitaWS, recomenda-se rodar os testes apenas 1 vez por minuto.
