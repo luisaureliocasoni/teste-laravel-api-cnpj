@@ -29,6 +29,6 @@ Route::get('/', function (){
 
 Route::controller(EmpresaController::class)->group(function () {
     Route::get('/empresa/{cnpj}', 'get');
-    Route::put('/empresa/{cnpj}', 'edit');
+    Route::post('/empresa/{cnpj}/refresh', 'refresh');
     Route::delete('/empresa/{cnpj}', 'delete');
 });

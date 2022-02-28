@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Empresa;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class EmpresaController extends Controller
 {
@@ -64,6 +65,59 @@ class EmpresaController extends Controller
         $empresa_nova->save();
 
         return response()->json($empresa_nova);
+    }
+
+    public function refresh($cnpj, Request $request)
+    {
+
+        // Tenta validar se o CNPJ é válido, para evitar problemas de requisição
+        $request->merge(['cnpj' => $cnpj]);
+        $this->validate($request, [
+            'cnpj' => 'required|cnpj',
+        ]);
+
+        // Tenta recuperar a empresa direto no banco de dados
+        $empresa_db = Empresa::find($cnpj);
+
+        if (!$empresa_db){
+            // não achou a empresa - retorna direto
+            throw new NotFoundHttpException('Empresa não encontrada!');
+        }
+
+        $empresa_db = $this->getOnIRS($cnpj, $empresa_db);
+
+        if ($empresa_db === false) {
+            return response()->json([
+                'message' => 'CNPJ não encontrado ou estamos com dificuldades técnicas. Revise o CNPJ e tente novamente.'
+            ], 500);
+        }
+
+
+        // puxa o codigo IBGE da cidade - estado
+        if ($empresa_db->endereco_estado === 'EX') {
+            // a api não indica o País, logo terei que colocar que é no exterior
+            $empresa_db->endereco_pais = 'Exterior';
+        } else {
+            $codigo_ibge = $this->getIBGECodeCity( $empresa_db->endereco_estado,  $empresa_db->endereco_cidade );
+
+            if ($codigo_ibge === false) {
+                return response()->json([
+                    'message' => 'Dificuldades técnicas para consultar a API do IBGE. Tente novamente mais tarde.'
+                ], 500);
+            } else if ($codigo_ibge === null) {
+                return response()->json([
+                    'message' => 'Erro fatal: Cidade '.$empresa_db->endereco_cidade.'-'.$empresa_db->endereco_estado.' não encontrada na lista do IBGE.'
+                ], 500);
+            }
+
+            $empresa_db->endereco_pais = 'Brasil';
+            $empresa_db->endereco_codigo_ibge = $codigo_ibge;
+        }
+
+        // salva a empresa
+        $empresa_db->update();
+
+        return response()->json($empresa_db);
     }
 
 
