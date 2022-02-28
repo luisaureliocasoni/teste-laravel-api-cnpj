@@ -120,6 +120,29 @@ class EmpresaController extends Controller
         return response()->json($empresa_db);
     }
 
+    public function delete($cnpj, Request $request)
+    {
+
+        // Tenta validar se o CNPJ é válido, para evitar problemas de requisição
+        $request->merge(['cnpj' => $cnpj]);
+        $this->validate($request, [
+            'cnpj' => 'required|cnpj',
+        ]);
+
+        // Tenta recuperar a empresa direto no banco de dados
+        $empresa_db = Empresa::find($cnpj);
+
+        if (!$empresa_db){
+            // não achou a empresa - retorna direto
+            throw new NotFoundHttpException('Empresa não encontrada!');
+        }
+
+        // apaga a empresa
+        $empresa_db->delete();
+
+        return response(null, 204);
+    }
+
 
     /**
      * Recupera os aados do CNPJ na Receita Federal
