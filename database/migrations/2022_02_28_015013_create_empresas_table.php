@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string('endereco_cep', 8)->nullable();
             $table->string('endereco_codigo_ibge', 8)->nullable();
             $table->string('endereco_logradouro', 255);
+            $table->string('endereco_numero', 255);
             $table->string('endereco_bairro', 255)->nullable();
+            $table->string('endereco_complemento', 255)->nullable();
             $table->string('endereco_cidade', 255)->nullable();
             $table->string('endereco_estado', 255)->nullable();
             $table->string('endereco_pais', 255);
