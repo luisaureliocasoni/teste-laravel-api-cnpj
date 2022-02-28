@@ -250,8 +250,69 @@ class EmpresaControllerTest extends TestCase
 
         $empresaDepoisUpdate = Empresa::find('33913487000152');
 
-        $this->assertNotEquals($empresaAntesUpdate->updated_at->format('Y-m-d H:i:s'), $empresaDepoisUpdate->updated_at->format('Y-m-d H:i:s'));
         $this->assertNotEquals($empresaAntesUpdate->nome_fantasia, $empresaDepoisUpdate->nome_fantasia);
 
+    }
+
+    public function test_verificando_cnpj_invalido_delete_route()
+    {
+        $this->json('DELETE', 'api/empresa/33913487000150', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+        $this->json('DELETE', 'api/empresa/3333', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+    }
+
+    public function test_verificando_se_esta_disparando_erro_404_cnpj_nao_cadastrado_delete_route()
+    {
+        $this->populateDatabase();
+        $this->assertDatabaseCount('empresas', 2);
+
+        $response = $this->json('DELETE', 'api/empresa/33051491000159', [], ['Accept' => 'application/json'])
+            ->assertStatus(404)
+            ->getContent();
+
+        $responseJson = json_decode($response, true);
+
+        $this->assertEquals("Empresa não encontrada!", $responseJson['message']);
+    }
+
+    public function test_verificando_se_esta_removendo_dado_delete_route()
+    {
+        $this->populateDatabase();
+        $this->assertDatabaseCount('empresas', 2);
+
+        $this->assertDatabaseHas('empresas', [
+            'cnpj' => '33913487000152'
+        ]);
+
+        $this->json('DELETE', 'api/empresa/33913487000152', [], ['Accept' => 'application/json'])
+            ->assertStatus(204);
+
+        $this->assertDatabaseCount('empresas', 1);
+
+        $this->assertDatabaseMissing('empresas', [
+            'cnpj' => '33913487000152'
+        ]);
+
+        $this->json('DELETE', 'api/empresa/33913487000152', [], ['Accept' => 'application/json'])
+            ->assertStatus(404);
     }
 }
