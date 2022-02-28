@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use DateTime;
+use http\Exception\BadMethodCallException;
 use Illuminate\Http\Request;
 use App\Models\Empresa;
 use Illuminate\Support\Facades\Http;
@@ -69,9 +70,10 @@ class EmpresaController extends Controller
     /**
      * Recupera os aados do CNPJ na Receita Federal
      * @param $cnpj
+     * @param Empresa|null $empresa Objeto existente de empresa - se informado, atualiza os dados
      * @return Empresa|false
      */
-    private function getOnIRS($cnpj) {
+    private function getOnIRS($cnpj, Empresa $empresa = null) {
         try{
             $response = Http::get('https://receitaws.com.br/v1/cnpj/'.$cnpj);
             $responseData = $response->json();
@@ -81,7 +83,15 @@ class EmpresaController extends Controller
                 return false;
             }
 
-            $empresa = new Empresa;
+            if ($empresa === null) {
+                $empresa = new Empresa;
+                $empresa->cnpj = $cnpj;
+            } else {
+                if ($empresa->cnpj !== $cnpj) {
+                    throw new \BadMethodCallException('O objeto empresa tem CNPJ diferente do informado!');
+                }
+            }
+
             $empresa->razao_social = $responseData['nome'];
             $empresa->nome_fantasia = $responseData['fantasia'];
             $empresa->atividade_principal = $responseData['atividade_principal'][0]['text'];
@@ -94,7 +104,6 @@ class EmpresaController extends Controller
             $empresa->endereco_complemento = $responseData['complemento'];
             $empresa->endereco_cidade = $responseData['municipio'];
             $empresa->endereco_estado = $responseData['uf'];
-            $empresa->cnpj = $cnpj;
 
             return $empresa;
         }catch (\Exception $err) {
