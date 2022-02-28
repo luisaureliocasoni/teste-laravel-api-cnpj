@@ -9,6 +9,8 @@ class Empresa extends Model
 
     // Atributos de conexão a tabela
     protected $primaryKey = 'cnpj';
+    protected $keyType    = 'string';
+    public $incrementing  = false;
     protected $table      = 'empresas';
     protected $hidden     = [
         'created_at',
