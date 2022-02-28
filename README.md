@@ -16,4 +16,4 @@ OU
 
 ## Testando usando docker
 1`./vendor/bin/sail artisan make:test <nometeste>` - para criar o teste
-1`./vendor/bin/sail test` - para rodar os testes - por causa do fato de que a aplicação está usando a API pública do ReceitaWS, recomenda-se rodar os testes apenas 1 vez por minuto.
+2`./vendor/bin/sail test` - para rodar os testes - por causa do fato de que a aplicação está usando a API pública do ReceitaWS, recomenda-se rodar os testes apenas 1 vez por minuto.
