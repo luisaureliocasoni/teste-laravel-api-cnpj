@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmpresaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,4 +25,10 @@ Route::get('/', function (){
         "message" => "Em funcionamento",
         "application" => env("APP_NAME", "VAPI")
     ]);
+});
+
+Route::controller(EmpresaController::class)->group(function () {
+    Route::get('/empresa/{cnpj}', 'get');
+    Route::put('/empresa/{cnpj}', 'edit');
+    Route::delete('/empresa/{cnpj}', 'delete');
 });
