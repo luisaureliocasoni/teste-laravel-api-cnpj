@@ -192,4 +192,66 @@ class EmpresaControllerTest extends TestCase
 
         $this->assertDatabaseCount('empresas', 2);
     }
+
+
+    public function test_verificando_cnpj_invalido_refresh_route()
+    {
+        $this->json('POST', 'api/empresa/33913487000150/refresh', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+        $this->json('POST', 'api/empresa/3333/refresh', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+    }
+
+    public function test_verificando_se_esta_disparando_erro_404_cnpj_nao_cadastrado_refresh_route()
+    {
+        $this->populateDatabase();
+        $this->assertDatabaseCount('empresas', 2);
+
+        $response = $this->json('POST', 'api/empresa/33051491000159/refresh', [], ['Accept' => 'application/json'])
+            ->assertStatus(404)
+            ->getContent();
+
+        $responseJson = json_decode($response, true);
+
+        $this->assertEquals("Empresa não encontrada!", $responseJson['message']);
+    }
+
+    public function test_verificando_se_esta_atualizando_refresh_route()
+    {
+        $this->populateDatabase();
+        $this->assertDatabaseCount('empresas', 2);
+
+        // puxando os dados da empresa para ver se o timestamp está atualizando
+        // emula dados desatualizados da empresa
+        $empresaAntesUpdate = Empresa::find('33913487000152');
+        $empresaAntesUpdate->nome_fantasia = "TESTE 123 - ISSO NÃO É UM NOME FANTASIA";
+        $empresaAntesUpdate->save();
+
+        $this->json('POST', 'api/empresa/33913487000152/refresh', [], ['Accept' => 'application/json'])
+            ->assertStatus(200);
+
+        $empresaDepoisUpdate = Empresa::find('33913487000152');
+
+        $this->assertNotEquals($empresaAntesUpdate->updated_at->format('Y-m-d H:i:s'), $empresaDepoisUpdate->updated_at->format('Y-m-d H:i:s'));
+        $this->assertNotEquals($empresaAntesUpdate->nome_fantasia, $empresaDepoisUpdate->nome_fantasia);
+
+    }
 }
