@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', function (){
+    return response()->json([
+        "message" => "Por favor, acesse as rotas com o prefixo /api",
+        "application" => env("APP_NAME", "VAPI")
+    ]);
 });
