@@ -61,6 +61,46 @@ class EmpresaControllerTest extends TestCase
 
     }
 
+    public function test_verificando_cnpj_invalido()
+    {
+        $this->assertDatabaseCount('empresas', 0);
+
+        $this->json('GET', 'api/empresa/33913487000150', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+        $this->json('GET', 'api/empresa/111222333000099', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+        $this->json('GET', 'api/empresa/3333', [], ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                "message" => "CNPJ inválido",
+                "errors" => [
+                    "cnpj" => [
+                        "CNPJ inválido"
+                    ]
+                ]
+            ]);
+
+        $this->assertDatabaseCount('empresas', 0);
+    }
+
     public function test_inserindo_empresas_se_esta_funcionando()
     {
         $this->assertDatabaseMissing('empresas', [
